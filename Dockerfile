@@ -1,37 +1,29 @@
 # Bareos director Dockerfile (fork of barcus/bareos-director
-FROM ubuntu:focal
+FROM debian:bullseye
 
 LABEL maintainer="admin@zerix.at"
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV BAREOS_KEY https://download.bareos.org/current/xUbuntu_20.04/Release.key
-ENV BAREOS_REPO https://download.bareos.org/current/xUbuntu_20.04/
+ENV BAREOS_KEY http://download.bareos.org/current/Debian_11/Release.key
+ENV BAREOS_REPO http://download.bareos.org/current/Debian_11/
 ENV BAREOS_DPKG_CONF bareos-database-common bareos-database-common
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apt-get update -qq \
- && apt-get -qq -y install --no-install-recommends curl tzdata gnupg \
- && curl -Ls $BAREOS_KEY -o /tmp/bareos.key \
- && apt-key --keyring /etc/apt/trusted.gpg.d/breos-keyring.gpg \
-    add /tmp/bareos.key \
- && echo "deb $BAREOS_REPO /" > /etc/apt/sources.list.d/bareos.list \
- && echo "${BAREOS_DPKG_CONF}/dbconfig-install boolean false" \
-    | debconf-set-selections \
- && echo "${BAREOS_DPKG_CONF}/install-error select ignore" \
-    | debconf-set-selections \
- && echo "${BAREOS_DPKG_CONF}/database-type select pgsql" \
-    | debconf-set-selections \
- && echo "${BAREOS_DPKG_CONF}/missing-db-package-error select ignore" \
-    | debconf-set-selections \
- && echo 'postfix postfix/main_mailer_type select No configuration' \
-    | debconf-set-selections \
- && apt-get update -qq \
- && apt-get install -qq -y --no-install-recommends \
-    bareos postgresql-client bareos-tools \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update -qq
+RUN apt-get -qq -y install --no-install-recommends curl tzdata gnupg
+RUN curl -Ls $BAREOS_KEY -o /tmp/bareos.key
+RUN apt-key --keyring /etc/apt/trusted.gpg.d/bareos-keyring.gpg add /tmp/bareos.key
+RUN echo "deb $BAREOS_REPO /" > /etc/apt/sources.list.d/bareos.list
+RUN echo "${BAREOS_DPKG_CONF}/dbconfig-install boolean false" | debconf-set-selections
+RUN echo "${BAREOS_DPKG_CONF}/install-error select ignore" | debconf-set-selections
+RUN echo "${BAREOS_DPKG_CONF}/database-type select pgsql" | debconf-set-selections
+RUN echo "${BAREOS_DPKG_CONF}/missing-db-package-error select ignore" | debconf-set-selections
+RUN echo 'postfix postfix/main_mailer_type select No configuration' | debconf-set-selections
+RUN apt-get update -qq
+RUN apt-get install -qq -y --no-install-recommends bareos postgresql-client bareos-tools
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
 RUN tar czf /bareos-dir.tgz /etc/bareos
 
 COPY webhook-notify /usr/local/bin/webhook-notify
