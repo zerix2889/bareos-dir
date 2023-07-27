@@ -1,11 +1,11 @@
 # Bareos director Dockerfile (fork of barcus/bareos-director
-FROM ubuntu:focal
+FROM debian:bullseye
 
 LABEL maintainer="admin@zerix.at"
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV BAREOS_KEY https://download.bareos.org/current/xUbuntu_20.04/Release.key
-ENV BAREOS_REPO https://download.bareos.org/current/xUbuntu_20.04/
+ENV BAREOS_KEY https://download.bareos.org/current/Debian_11/Release.key
+ENV BAREOS_REPO https://download.bareos.org/current/Debian_11/
 ENV BAREOS_DPKG_CONF bareos-database-common bareos-database-common
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
